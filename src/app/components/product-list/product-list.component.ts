@@ -6,16 +6,23 @@ import { ActivatedRoute } from '@angular/router';
 @Component({
   selector: 'app-product-list',
   templateUrl: './product-list.component.html',
-  styleUrl: './product-list.component.css'
+  styleUrl: './product-list.component.css',
 })
-
 export class ProductListComponent {
-
   products: Product[] = [];
   currentCategoryId: number = 1;
+  previousCategoryId: number = 1;
   searchMode: boolean = false;
-  
-  constructor(private productService: ProductService, private route: ActivatedRoute) {}
+
+  // properties for pagination
+  pageNumber: number = 1;
+  pageSize: number = 10;
+  totalElements: number = 0;
+
+  constructor(
+    private productService: ProductService,
+    private route: ActivatedRoute
+  ) {}
 
   ngOnInit(): void {
     this.route.paramMap.subscribe(() => {
@@ -26,39 +33,48 @@ export class ProductListComponent {
   listProducts() {
     this.searchMode = this.route.snapshot.paramMap.has('keyword');
 
-    if(this.searchMode) {
+    if (this.searchMode) {
       this.handleSearchProducts();
-    }
-    else {
+    } else {
       this.handleListProducts();
-    }   
+    }
   }
 
   handleSearchProducts() {
     const keyword: string = this.route.snapshot.paramMap.get('keyword')!;
 
-    this.productService.searchProducts(keyword).subscribe(
-      data => {
-        this.products = data;
-      }
-    )
+    this.productService.searchProducts(keyword).subscribe((data) => {
+      this.products = data;
+    });
   }
 
-  handleListProducts(){
-    const hasCategoryId: boolean = this. route.snapshot.paramMap.has('id');
-    if(hasCategoryId){
+  handleListProducts() {
+    const hasCategoryId: boolean = this.route.snapshot.paramMap.has('id');
+    if (hasCategoryId) {
       // use the "+" symbol to convert a string to a number
       this.currentCategoryId = +this.route.snapshot.paramMap.get('id')!;
-    }
-    else {
+    } else {
       // default to category id 1
       this.currentCategoryId = 1;
     }
 
-    this.productService.getProductList(this.currentCategoryId).subscribe(
-      data => {
-        this.products = data;
-      }
-    )
+    if (this.previousCategoryId != this.currentCategoryId) {
+      this.pageNumber = 1;
+    }
+
+    this.previousCategoryId = this.currentCategoryId;
+
+    this.productService
+      .getProductListPaginated(
+        this.pageNumber - 1,
+        this.pageSize,
+        this.currentCategoryId
+      )
+      .subscribe((data) => {
+        this.products = data._embedded.products;
+        this.pageNumber = data.page.number + 1;
+        this.pageSize = data.page.size;
+        this.totalElements = data.page.totalElements;
+      });
   }
 }
