@@ -9,6 +9,7 @@ import { ActivatedRoute } from '@angular/router';
   styleUrl: './product-list.component.css',
 })
 export class ProductListComponent {
+
   products: Product[] = [];
   currentCategoryId: number = 1;
   previousCategoryId: number = 1;
@@ -76,5 +77,11 @@ export class ProductListComponent {
         this.pageSize = data.page.size;
         this.totalElements = data.page.totalElements;
       });
+  }
+
+  updatePageSize(pageSize: string) {
+    this.pageSize = +pageSize;
+    this.pageNumber = 1;
+    this.listProducts();
   }
 }
