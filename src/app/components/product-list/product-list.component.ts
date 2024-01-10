@@ -12,15 +12,13 @@ export class ProductListComponent {
 
   products: Product[] = [];
   currentCategoryId: number = 1;
-  previousCategoryId: number = 1;
   searchMode: boolean = false;
+  previousParameter: string | number = '';
 
   // properties for pagination
   pageNumber: number = 1;
   pageSize: number = 10;
   totalElements: number = 0;
-
-  previousKeyword: string = "";
 
   constructor(
     private productService: ProductService,
@@ -45,19 +43,23 @@ export class ProductListComponent {
 
   handleSearchProducts() {
     const keyword: string = this.route.snapshot.paramMap.get('keyword')!;
+    this.fetchProducts(keyword);
+  }
 
-    if (this.previousKeyword != keyword) {
+  handleListProducts() {
+    const currentCategoryId = +this.route.snapshot.paramMap.get('id')! || 1; 
+    this.fetchProducts(currentCategoryId);
+  }
+
+  private fetchProducts(parameter: string | number) {
+    if (this.previousParameter !== parameter) {
       this.pageNumber = 1;
     }
-    this.previousKeyword = keyword;
-
+    this.previousParameter = parameter;
+  
     this.productService
-      .searchProductsPaginated(
-        this.pageNumber - 1,
-        this.pageSize,
-        keyword
-      )
-      .subscribe(this.processResult());
+    .getProductsPaginated(this.pageNumber - 1, this.pageSize, parameter)
+    .subscribe(this.processResult());
   }
 
   processResult() {
@@ -67,31 +69,6 @@ export class ProductListComponent {
       this.pageSize = data.page.size;
       this.totalElements = data.page.totalElements;
     }
-  }
-
-  handleListProducts() {
-    const hasCategoryId: boolean = this.route.snapshot.paramMap.has('id');
-    if (hasCategoryId) {
-      // use the "+" symbol to convert a string to a number
-      this.currentCategoryId = +this.route.snapshot.paramMap.get('id')!;
-    } else {
-      // default to category id 1
-      this.currentCategoryId = 1;
-    }
-
-    if (this.previousCategoryId != this.currentCategoryId) {
-      this.pageNumber = 1;
-    }
-
-    this.previousCategoryId = this.currentCategoryId;
-
-    this.productService
-      .getProductListPaginated(
-        this.pageNumber - 1,
-        this.pageSize,
-        this.currentCategoryId
-      )
-      .subscribe(this.processResult());
   }
 
   updatePageSize(pageSize: string) {
