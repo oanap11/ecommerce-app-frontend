@@ -10,7 +10,7 @@ import { ActivatedRoute } from '@angular/router';
 })
 export class ProductDetailsComponent {
 
-  product!: Product;
+  product: Product = {} as Product;
 
   constructor(private productService: ProductService, private route: ActivatedRoute) {}
 
