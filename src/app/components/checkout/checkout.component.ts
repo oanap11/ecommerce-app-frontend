@@ -4,6 +4,7 @@ import { FormService } from '../../services/form.service';
 import { Country } from '../../common/country';
 import { State } from '../../common/state';
 import { CustomValidator } from '../../validators/custom-validator';
+import { CartService } from '../../services/cart.service';
 
 @Component({
   selector: 'app-checkout',
@@ -23,25 +24,26 @@ export class CheckoutComponent {
   shippingAddressStates: State[] = [];
   billingAddressStates: State[] = [];
   
-  constructor(private formBuilder: FormBuilder, private formService: FormService) {
+  constructor(private formBuilder: FormBuilder, private formService: FormService, private cartService: CartService) {
   }
 
   ngOnInit(): void {
+
+    this.reviewCartDetails();
+
     this.checkoutFormGroup = this.formBuilder.group({
       customer: this.formBuilder.group({
-        firstName: this.createFormControlWithValidation(),
-        lastName: this.createFormControlWithValidation(),
-        email: new FormControl('', 
-                              [Validators.required, 
-                              Validators.pattern('[a-z0-9._%+-]+@[a-z0-9.-]+\\.[a-z]{2,4}$')])
-      }),
+        firstName: this.createFormControlWithBasicValidation(),
+        lastName: this.createFormControlWithBasicValidation(),
+        email: this.createFormControlWithPatternValidation('[a-z0-9._%+-]+@[a-z0-9.-]+\\.[a-z]{2,4}$')
+      }),    
       shippingAddress: this.initAddressFormGroup(),
       billingAddress: this.initAddressFormGroup(),
       creditCard: this.formBuilder.group({
         cardType: new FormControl('', [Validators.required]),
-        nameOnCard: this.createFormControlWithValidation(),
-        cardNumber: new FormControl('', [Validators.required, Validators.pattern('[0-9]{16}')]),
-        securityCode: new FormControl('', [Validators.required, Validators.pattern('[0-9]{3}')]),
+        nameOnCard: this.createFormControlWithBasicValidation(),
+        cardNumber: this.createFormControlWithPatternValidation('[0-9]{16}'),
+        securityCode: this.createFormControlWithPatternValidation('[0-9]{3}'),
         expirationMonth: [''],
         expirationYear: ['']
       }),
@@ -123,20 +125,34 @@ export class CheckoutComponent {
 
   initAddressFormGroup(): FormGroup {
     return this.formBuilder.group({
-      street: this.createFormControlWithValidation(),
-      city: this.createFormControlWithValidation(),
+      street: this.createFormControlWithBasicValidation(),
+      city: this.createFormControlWithBasicValidation(),
       state: new FormControl('', [Validators.required]),
       country: new FormControl('', [Validators.required]),
-      zipCode: this.createFormControlWithValidation()
+      zipCode: this.createFormControlWithBasicValidation()
     });
   }
 
-  private createFormControlWithValidation(): FormControl {
+  private createFormControlWithBasicValidation(): FormControl {
     return new FormControl('', [
       Validators.required,
       Validators.minLength(2),
       CustomValidator.notOnlyWhitespace
     ]);
+  }
+
+  private createFormControlWithPatternValidation(pattern: string): FormControl {
+    return new FormControl('', [Validators.required, Validators.pattern(pattern)]);
+  }
+
+  reviewCartDetails() {
+    this.cartService.totalQuantity.subscribe(
+      totalQuantity => { this.totalQuantity = totalQuantity }
+    );
+
+    this.cartService.totalPrice.subscribe(
+      totalPrice => { this.totalPrice = totalPrice }
+    );
   }
 
 }
