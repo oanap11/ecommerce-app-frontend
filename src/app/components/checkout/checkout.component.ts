@@ -23,13 +23,14 @@ export class CheckoutComponent {
   shippingAddressStates: State[] = [];
   billingAddressStates: State[] = [];
   
-  constructor(private formBuilder: FormBuilder, private formService: FormService) {}
+  constructor(private formBuilder: FormBuilder, private formService: FormService) {
+  }
 
   ngOnInit(): void {
     this.checkoutFormGroup = this.formBuilder.group({
       customer: this.formBuilder.group({
-        firstName: new FormControl('', [Validators.required, Validators.minLength(2), CustomValidator.notOnlyWhitespace]),
-        lastName: new FormControl('', [Validators.required, Validators.minLength(2), CustomValidator.notOnlyWhitespace]),
+        firstName: this.createFormControlWithValidation(),
+        lastName: this.createFormControlWithValidation(),
         email: new FormControl('', 
                               [Validators.required, 
                               Validators.pattern('[a-z0-9._%+-]+@[a-z0-9.-]+\\.[a-z]{2,4}$')])
@@ -37,10 +38,10 @@ export class CheckoutComponent {
       shippingAddress: this.initAddressFormGroup(),
       billingAddress: this.initAddressFormGroup(),
       creditCard: this.formBuilder.group({
-        cardType: [''],
-        nameOnCard: [''],
-        cardNumber: [''],
-        securityCode: [''],
+        cardType: new FormControl('', [Validators.required]),
+        nameOnCard: this.createFormControlWithValidation(),
+        cardNumber: new FormControl('', [Validators.required, Validators.pattern('[0-9]{16}')]),
+        securityCode: new FormControl('', [Validators.required, Validators.pattern('[0-9]{3}')]),
         expirationMonth: [''],
         expirationYear: ['']
       }),
@@ -62,6 +63,23 @@ export class CheckoutComponent {
   get firstName() { return this.checkoutFormGroup.get('customer.firstName'); }
   get lastName() { return this.checkoutFormGroup.get('customer.lastName'); }
   get email() { return this.checkoutFormGroup.get('customer.email'); }
+
+  get shippingAddressStreet() { return this.checkoutFormGroup.get('shippingAddress.street'); }
+  get shippingAddressCity() { return this.checkoutFormGroup.get('shippingAddress.city'); }
+  get shippingAddressState() { return this.checkoutFormGroup.get('shippingAddress.state'); }
+  get shippingAddressCountry() { return this.checkoutFormGroup.get('shippingAddress.country'); }
+  get shippingAddressZipCode() { return this.checkoutFormGroup.get('shippingAddress.zipCode'); }
+
+  get billingAddressStreet() { return this.checkoutFormGroup.get('billingAddress.street'); }
+  get billingAddressCity() { return this.checkoutFormGroup.get('billingAddress.city'); }
+  get billingAddressState() { return this.checkoutFormGroup.get('billingAddress.state'); }
+  get billingAddressCountry() { return this.checkoutFormGroup.get('billingAddress.country'); }
+  get billingAddressZipCode() { return this.checkoutFormGroup.get('billingAddress.zipCode'); }
+
+  get creditCardType() { return this.checkoutFormGroup.get('creditCard.cardType'); }
+  get creditCardNameOnCard() { return this.checkoutFormGroup.get('creditCard.nameOnCard'); }
+  get creditCardNumber() { return this.checkoutFormGroup.get('creditCard.cardNumber'); }
+  get creditCardSecurityCode() { return this.checkoutFormGroup.get('creditCard.securityCode'); }
 
   onSubmit() {
     if(this.checkoutFormGroup.invalid) {
@@ -105,12 +123,20 @@ export class CheckoutComponent {
 
   initAddressFormGroup(): FormGroup {
     return this.formBuilder.group({
-      street: [''],
-      city: [''],
-      state: [''],
-      country: [''],
-      zipCode: ['']
+      street: this.createFormControlWithValidation(),
+      city: this.createFormControlWithValidation(),
+      state: new FormControl('', [Validators.required]),
+      country: new FormControl('', [Validators.required]),
+      zipCode: this.createFormControlWithValidation()
     });
+  }
+
+  private createFormControlWithValidation(): FormControl {
+    return new FormControl('', [
+      Validators.required,
+      Validators.minLength(2),
+      CustomValidator.notOnlyWhitespace
+    ]);
   }
 
 }
