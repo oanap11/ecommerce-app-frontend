@@ -2,9 +2,9 @@ import { Injectable } from '@angular/core';
 import { Observable, of } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { HttpClient } from '@angular/common/http';
-import { Country } from '../common/country';
+import { Country } from '../common/country/country';
 import { map } from 'rxjs/operators';
-import { State } from '../common/state';
+import { State } from '../common/state/state';
 
 @Injectable({
   providedIn: 'root'

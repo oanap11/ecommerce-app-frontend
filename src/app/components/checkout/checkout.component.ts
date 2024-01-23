@@ -1,8 +1,8 @@
 import { Component } from '@angular/core';
 import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
 import { FormService } from '../../services/form.service';
-import { Country } from '../../common/country';
-import { State } from '../../common/state';
+import { Country } from '../../common/country/country';
+import { State } from '../../common/state/state';
 import { CustomValidator } from '../../validators/custom-validator';
 import { CartService } from '../../services/cart.service';
 
