@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
+import { AbstractControl, FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
 import { FormService } from '../../services/form.service';
 import { Country } from '../../common/country/country';
 import { State } from '../../common/state/state';
@@ -103,31 +103,7 @@ export class CheckoutComponent {
   }
 
   makeAPurchase() {
-    let order = new Order();
-    order.totalPrice = this.totalPrice;
-    order.totalQuantity = this.totalQuantity;
-
-    const cartItems = this.cartService.cartItems;
-    let orderItems: OrderItem[] = cartItems.map(cartItem => new OrderItem(cartItem));
-
-    let purchase = new Purchase();
-    purchase.customer = this.checkoutFormGroup.controls['customer'].value;
-
-    
-    purchase.shippingAddress = this.checkoutFormGroup.controls['shippingAddress'].value;
-    const shippingState: State = JSON.parse(JSON.stringify(purchase.shippingAddress.state));
-    const shippingCountry: Country = JSON.parse(JSON.stringify(purchase.shippingAddress.country));
-    purchase.shippingAddress.state = shippingState.name;
-    purchase.shippingAddress.country = shippingCountry.name;
-    
-    purchase.billingAddress = this.checkoutFormGroup.controls['billingAddress'].value;
-    const billingState: State = JSON.parse(JSON.stringify(purchase.billingAddress.state));
-    const billingCountry: Country = JSON.parse(JSON.stringify(purchase.billingAddress.country));
-    purchase.billingAddress.state = billingState.name;
-    purchase.billingAddress.country = billingCountry.name;
-
-    purchase.order = order;
-    purchase.orderItems = orderItems;
+    const purchase = this.createPurchase();
 
     this.checkoutService.placeOrder(purchase).subscribe(
       {
@@ -143,7 +119,37 @@ export class CheckoutComponent {
     );
   }
 
-  resetCart() {
+  createPurchase(): Purchase {
+    const cartItems = this.cartService.cartItems;
+    const orderItems: OrderItem[] = cartItems.map(cartItem => new OrderItem(cartItem));
+  
+    const purchase = new Purchase();
+    purchase.customer = this.checkoutFormGroup.controls['customer'].value;
+    purchase.shippingAddress = this.convertAddressData(this.checkoutFormGroup.controls['shippingAddress']);
+    purchase.billingAddress = this.convertAddressData(this.checkoutFormGroup.controls['billingAddress']);
+    purchase.order = this.createOrder();
+    purchase.orderItems = orderItems;
+  
+    return purchase;
+  }
+
+  private convertAddressData(addressFormGroup: AbstractControl): Address {
+    const address = addressFormGroup.value;
+    const state: State = JSON.parse(JSON.stringify(address.state));
+    const country: Country = JSON.parse(JSON.stringify(address.country));
+    address.state = state.name;
+    address.country = country.name;
+    return address;
+  }
+
+  private createOrder() {
+    let order = new Order();
+    order.totalPrice = this.totalPrice;
+    order.totalQuantity = this.totalQuantity;
+    return order;
+  }
+
+  private resetCart() {
     this.cartService.cartItems = [];
     this.cartService.totalPrice.next(0);
     this.cartService.totalQuantity.next(0);
