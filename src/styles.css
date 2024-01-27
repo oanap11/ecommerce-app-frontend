@@ -1,5 +1,6 @@
 @import 'bootstrap/dist/css/bootstrap.min.css'; 
 @import '@fortawesome/fontawesome-free/css/all.min.css';
+@import '@okta/okta-signin-widget/dist/css/okta-sign-in.min.css';
 
 /* 
  * ----------------------------
